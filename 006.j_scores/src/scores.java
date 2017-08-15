@@ -10,18 +10,19 @@ public class scores {
 
 	public static Scanner scanner = new Scanner(System.in);
 	public static int[][] data;
-	public static int status;
+	public static int status, count;
 	
 	public static void main(String[] args) {
 		status = 1;
-		//data[0][i]=english, data[1][i]=math, data[2][i]=average, 
-		//data[3][i]=passOrNot, data[4][i]=rank
-		data = new int [5][10]; 
+		count = 0;
+		//data[i][0]=Student number, data[i][1]=English, data[i][2]=math, 
+		//data[i][3]=average, data[i][4]=passOrNot, data[i][5] = rank
+		data = new int [10][6]; 
 		
 		//Fill in all grades as -1.
-		for (int i = 0; i < data[0].length; i++) {
-			data[0][i] = -1;
-			data[1][i] = -1;
+		for (int i = 0; i < data.length; i++) {
+			data[i][1] = -1;
+			data[i][2] = -1;
 		}
 		
 		//Run process
@@ -56,11 +57,11 @@ public class scores {
 				if (input == -1)
 					status = 0;
 				else if (input == 1) {
-					histogram(data[0]);
+					histogram(data, 1);
 					status = 0;
 				}
 				else if (input == 2) {
-					histogram(data[1]);
+					histogram(data, 2);
 					status = 0;
 				}
 				else
@@ -91,7 +92,7 @@ public class scores {
 				if (input == -1)
 					status = 0;
 				else if (input > 0 && input <4) {
-					data[4] = rank(input);
+					rank(input);
 					status = 0;
 				}
 				else 
@@ -118,47 +119,46 @@ public class scores {
 			System.out.println("Scores input is out of boundary.");
 		else {
 			//If SN is more than array size, resize array.
-			if (sn >= data[0].length) {
-				int[][] temp_array = new int [4][sn + 10];
-				for (int i = 0; i < 4; i++)
+			if (count >= data.length) {
+				int[][] temp_array = new int [count * 2][6];
+				for (int i = 0; i < count; i++)
 					System.arraycopy(data[i], 0, temp_array[i], 0, data[i].length);
-				
-				for (int i = data[0].length; i < (sn + 10); i++) {
-					for (int j = 0; j < 4; j++)
-						temp_array[j][i] = -1;
-				}
+				data = null;
 				data = temp_array;
 			}
 			
-			for (int i = 0; i <= sn; i++) {
-				if (data[0][sn] != -1) {
+			for (int i = 0; i <= count; i++) {
+
+				if (data[i][0] == sn) {
 					System.out.printf("Data %d duplicated!\n", sn);
 					break;
 				}
-				if (i == sn ) {
-					data[0][sn] = en;
-					data[1][sn] = math;
-					data[2][sn] = (int)((en + math) / 2);
-					if (data[2][sn] > 60)
-						data[3][sn] = 1;
+				else if (i == count - 1 || count == 0) {
+					data[count][0] = sn;
+					data[count][1] = en;
+					data[count][2] = math;
+					data[count][3] = (int)((en + math) / 2);
+					if (data[count][3] > 60)
+						data[count][4] = 1;
+					count++;
+					break;
 				}
+
 			}
 		}
 	}
 	
-	public static void histogram(int[] array) {
+	public static void histogram(int[][] array, int index) {
 		//Calculate amounts.
-		int[] count = new int[11];
+		int[] freq = new int[11];
 		int temp;
-		for (int i = 0; i < array.length; i++) {
-			if (array[i] != -1) {
-				temp = array[i] / 10;
-				count[temp]++;
-			}
+		for (int i = 0; i < count; i++) {
+			temp = array[i][index] / 10;
+			freq[temp]++;
 		}
 		
 		//Find maximum of count.
-		int max = max(count);
+		int max = max(freq);
 		
 		//Print histogram.
 		newLine();
@@ -169,12 +169,12 @@ public class scores {
 			System.out.print("-");
 		newLine();
 		for (int i = 0; i < max; i++) {
-			for (int j = 0; j < count.length; j++) {
-				if (count[j] == 0) 
+			for (int j = 0; j < freq.length; j++) {
+				if (freq[j] == 0) 
 					System.out.print("    ");
 				else {
 					System.out.print("  * ");
-					count[j]--;
+					freq[j]--;
 				}
 			}
 			newLine();
@@ -194,11 +194,11 @@ public class scores {
 		printTitle();
 		
 		String pass;
-		for (int i = 0; i < data[0].length; i++) {
-			pass = passOrNot(data[3][i]);
+		for (int i = 0; i < count; i++) {
+			pass = passOrNot(data[i][4]);
 			//Print only inputs.
-			if (data[0][i] != -1) 
-				System.out.printf("%4d%6d%7d%6d%8s\n", i, data[0][i], data[1][i], data[2][i], pass);
+			if (data[i][1] != -1) 
+				System.out.printf("%4d%6d%7d%6d%8s\n", data[i][0], data[i][1], data[i][2], data[i][3], pass);
 		}
 	}
 	
@@ -225,10 +225,10 @@ public class scores {
 		
 		String pass;
 		int total = 0;
-		for (int i = 0; i < data[0].length; i++) {
-			if (data[item - 1][i] > start && data[item - 1][i] < end) {
-				pass = passOrNot(data[3][i]);
-				System.out.printf("%4d%6d%7d%6d%8s\n", i, data[0][i], data[1][i], data[2][i], pass);
+		for (int i = 0; i < count; i++) {
+			if (data[i][item] > start && data[i][item] < end) {
+				pass = passOrNot(data[i][4]);
+				System.out.printf("%4d%6d%7d%6d%8s\n", data[i][0], data[i][1], data[i][2], data[i][3], pass);
 				total++;
 			}
 		}
@@ -252,74 +252,40 @@ public class scores {
 		newLine();
 	}
 	
-	public static int[] rank(int item) {
-		//temp[0][i]:Student number, temp[1][i]:item, temp[2][i]:rank
-		int[][] temp = new int [3][data[0].length];
-		for (int i = 0; i < temp[0].length; i++) {
-			temp[0][i] = i;
-			temp[1][i] = data[item - 1][i];
-		}
+	public static void rank(int item) {
+		//Assort by item using bubble sort.
+		int[] temp = new int[6];
 		
-		//Sort by item using bubble sorting.
-		for (int i = 0; i < temp[0].length; i++) {
-			for (int j = 0; j < temp[0].length - i - 1; j++) {
-				if (temp[1][j] < temp[1][j + 1]) {
-					int temp_0 = temp[0][j];
-					int temp_1 = temp[1][j];
-					temp[0][j] = temp[0][j + 1];
-					temp[1][j] = temp[1][j + 1];
-					temp[0][j + 1] = temp_0;
-					temp[1][j + 1] = temp_1;
+		for (int i = 0; i < count - 1; i++) {
+			for (int j = i; j < count; j++) {
+				if (data[i][item] < data[j][item]) {
+					temp = data[i];
+					data[i] = data[j];
+					data[j] = temp;
 				}
 			}
 		}
-		
 		//Give ranks.
 		int rank = 1;
-		for (int i = 0; i < temp[0].length - 1; i++) {
-			if (temp[1][i] > temp[1][i + 1])
-				temp[2][i] = rank++;
+		for (int i = 0; i < count; i++) {
+			if (data[i][item] > data[i + 1][item])
+				data[i][5] = rank++;
 			else {
-				int count = 0;
-				for (int j = i; j < temp[0].length - 1; j++) {
-					if (temp[1][i] == temp[1][i + 1]) {
-						count++;
-						if (j == temp[0].length - 2)
-							count++;
+				int num = 0;
+				for (int j = i; j < count - 1; j++) {
+					if (data[j][item] == data[j + 1][item]) {
+						num++;
 					}
 					else
 						break;
 				}
-				for (int j = i; j < i + count; j++) {
-					temp[2][j] = rank;
+				for (int j = i; j <= i + num; j++) {
+					data[j][5] = rank;
 				}
-				rank += count;
-				i += count - 1;
+				rank += num + 1;
+				i += num;
 			}
 		}
-		
-		//Sort by SN using bubble sorting.
-		boolean tf = false;
-		for (int i = 0; i < temp[0].length; i++) {
-			for (int j = 0; j < temp[0].length - i - 1; j++) {
-				tf = (temp[0][j] < temp[0][j + 1]);
-				System.out.println(i +" "+j+" "+tf);
-				if (temp[0][j] < temp[0][j + 1]) {
-					int temp_0 = temp[0][j];
-					int temp_1 = temp[1][j];
-					int temp_2 = temp[2][j];
-					temp[0][j] = temp[0][j + 1];
-					temp[1][j] = temp[1][j + 1];
-					temp[2][j] = temp[2][j + 1];
-					temp[0][j + 1] = temp_0;
-					temp[1][j + 1] = temp_1;
-					temp[2][j + 1] = temp_2;
-				}
-			}
-		}	
-		
-		//Return result array.
-		return temp[2];
 	}
 	
 	public static void printRankTitle() {
@@ -338,10 +304,8 @@ public class scores {
 	public static void printRankTable() {
 		printRankTitle();
 		
-		for (int i = 0; i < data[0].length; i++) {
-			//Print only inputs.
-			if (data[0][i] != -1) 
-				System.out.printf("%4d%6d%7d%6d%7d\n", i, data[0][i], data[1][i], data[2][i], data[4][i]);
+		for (int i = 0; i < count; i++) {
+			System.out.printf("%4d%6d%7d%6d%7d\n", data[i][0], data[i][1], data[i][2], data[i][3], data[i][5]);
 		}
 	}
 
