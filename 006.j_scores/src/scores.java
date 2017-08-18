@@ -1,5 +1,5 @@
 /*
- * Practice 006.j_Scores_level 1
+ * Practice 006.j_Scores_level 5
  * Date 20170802
  */
 
@@ -90,14 +90,17 @@ public class scores {
 				System.out.print("1) English. 2) Math. 3) Average. -1) Back:");
 				input = scanner.nextInt();
 				if (input == -1)
-					status = 0;
+					;
 				else if (input > 0 && input <4) {
 					rank(input);
-					status = 0;
+					double[] statistic = statistic(input);
+					printRankTable();
+					System.out.printf("Average: %.2f\nSTD: %.2f\nMedian: %.0f\n",
+									   statistic[0], statistic[1], statistic[2]);
 				}
 				else 
 					System.out.println("Wrong input!");
-				printRankTable();
+				
 				status = 0;
 				break;
 			}
@@ -267,25 +270,22 @@ public class scores {
 		}
 		//Give ranks.
 		int rank = 1;
-		for (int i = 0; i < count; i++) {
-			if (data[i][item] > data[i + 1][item])
+		
+		for (int i = 0; i < count - 1; i++) {
+			if (data[i][item] > data[i + 1][item]) {
+				if (i != 0 && data[i][item] < data[i - 1][item])
+					data[i][5] = i + 2;
 				data[i][5] = rank++;
-			else {
-				int num = 0;
-				for (int j = i; j < count - 1; j++) {
-					if (data[j][item] == data[j + 1][item]) {
-						num++;
-					}
-					else
-						break;
-				}
-				for (int j = i; j <= i + num; j++) {
-					data[j][5] = rank;
-				}
-				rank += num + 1;
-				i += num;
 			}
+			else {
+				data[i][5] = rank;
+			}
+
 		}
+		if (data[count - 2][item] != data[count - 1][item])
+				data[count - 1][5] = count;
+		else
+			data[count - 1][5] = data[count - 2][5];
 	}
 	
 	public static void printRankTitle() {
@@ -303,10 +303,38 @@ public class scores {
 	
 	public static void printRankTable() {
 		printRankTitle();
-		
+		//Sort in order of student number.
+		int[] temp;
+		for (int i = 0; i < count - 1; i++) {
+			for (int j = 0; j < count - i - 1; j++) {
+				if (data[i][0] > data[i + 1][0]) {
+					temp = data[i];
+					data[i] = data[i + 1];
+					data[i + 1] = temp;
+				}
+			}
+		}
 		for (int i = 0; i < count; i++) {
 			System.out.printf("%4d%6d%7d%6d%7d\n", data[i][0], data[i][1], data[i][2], data[i][3], data[i][5]);
 		}
+		for (int i = 0; i < 33; i++)
+			System.out.print("-");
+		newLine();
+	}
+	
+	public static double[] statistic(int item) {
+		int sum = 0;
+		double average, std = 0, medium;
+		for (int i = 0; i < count; i++) {
+			sum += data[i][item];
+			std += Math.pow(data[i][item], 2);
+		}
+		average = sum / count;
+		std = Math.sqrt(std / count - Math.pow(average, 2));
+		medium = data[(count / 2)][item];
+		double[] result = {average, std, medium};
+		return result;
+		
 	}
 
 }
